@@ -3,16 +3,51 @@ const St = imports.gi.St;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 
+const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
+const Mainloop = imports.mainloop;
+
 let text, button;
 
+function _setWallpaper(path) {
+   let bg_settings = new Gio.Settings({
+      schema_id: 'org.gnome.desktop.background'
+   });
+   bg_settings.set_value('picture-uri', new GLib.Variant('s', path));
+   bg_settings.set_value('picture-options', new GLib.Variant('s', 'wallpaper'));
+}
+
+function _listDir(path) {
+   let dir = Gio.file_new_for_path(path);
+   let fenum = dir.enumerate_children('*', Gio.FileQueryInfoFlags.NONE, null);
+   let info;
+   let flist = new Array();
+   while((info=fenum.next_file(null))){
+      flist.push(path+"/"+info.get_name());
+   }
+   return flist;
+}
+
+function _getWallpaper() {
+   let flist = _listDir('/home/watson/Pictures');
+   return flist[GLib.random_int_range(0, flist.length)];
+}
+
+function _rotateWallpaper() {
+   var wp = _getWallpaper()
+   _setWallpaper(wp);
+   //_showHello(wp);
+   return true;
+}
+/*
 function _hideHello() {
     Main.uiGroup.remove_actor(text);
     text = null;
 }
 
-function _showHello() {
+function _showHello(msg) {
     if (!text) {
-        text = new St.Label({ style_class: 'helloworld-label', text: "Hello, world!" });
+        text = new St.Label({ style_class: 'hellorld-label', text: "Hello, world!"+msg });
         Main.uiGroup.add_actor(text);
     }
 
@@ -29,8 +64,9 @@ function _showHello() {
                        transition: 'easeOutQuad',
                        onComplete: _hideHello });
 }
-
+*/
 function init() {
+/*
     button = new St.Bin({ style_class: 'panel-button',
                           reactive: true,
                           can_focus: true,
@@ -42,12 +78,14 @@ function init() {
 
     button.set_child(icon);
     button.connect('button-press-event', _showHello);
+*/
+    Mainloop.timeout_add(1000*60, _rotateWallpaper);
 }
 
 function enable() {
-    Main.panel._rightBox.insert_child_at_index(button, 0);
+    //Main.panel._rightBox.insert_child_at_index(button, 0);
 }
 
 function disable() {
-    Main.panel._rightBox.remove_child(button);
+    //Main.panel._rightBox.remove_child(button);
 }
